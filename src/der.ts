@@ -1,7 +1,7 @@
 import { Uint8ArrayList } from 'uint8arraylist'
 import { withArrayBuffer } from 'uint8arrays'
 
-interface Context {
+export interface Context {
   offset: number
 }
 

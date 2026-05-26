@@ -6,7 +6,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { decodeDer, encodeBitString, encodeInteger, encodeSequence } from './der.ts'
 import { InvalidParametersError } from './errors.ts'
-import { PrivateKeyMessage, PublicKeyMessage } from './pb/keys.ts'
+import { PrivateKeyMessage, PublicKeyMessage } from './pb.ts'
 import type { CryptoImplementation, PrivateKey, PublicKey } from './index.ts'
 import type { AbortOptions } from 'abort-error'
 import type { MultihashDigest } from 'multiformats'
@@ -165,8 +165,8 @@ class RSACrypto implements CryptoImplementation {
       throw new InvalidParametersError('Incorrect Type field in protobuf')
     }
 
-    const pkcs1Decoded = decodeDer(message.Data)
-    const privateKeyJwk = pkcs1MessageToJwk(pkcs1Decoded)
+    const pkcs1 = decodeDer(message.Data)
+    const privateKeyJwk = pkcs1MessageToJwk(pkcs1)
     const publicKeyJwk = privateJWKToPublicJWK(privateKeyJwk)
     const digest = await publicKeyId(publicKeyJwk)
 
@@ -174,107 +174,12 @@ class RSACrypto implements CryptoImplementation {
 
     return new RSAPrivateKey(privateKeyJwk, new RSAPublicKey(publicKeyJwk, digest))
   }
-  /*
-  async serialize (key: PrivateKey, cipher: Cipher, options?: AbortOptions): Promise<string> {
-    const buf = key.toProtobuf()
-    const result = await cipher.encrypt(buf, options)
-
-    return base64.encode(uint8ArrayConcat([
-      result.salt,
-      result.iv,
-      result.cipherText
-    ], result.salt.byteLength + result.iv.byteLength + result.cipherText.byteLength))
-  }
-*/
-
-  /**
-   * Recently serialized RSA keys are stored in the protobuf format and
-   * encrypted, legacy keys are stored as encrypted PEM files.
-   */
-  /*
-  async deserialize (pem: string, cipher: Cipher, options?: AbortOptions): Promise<PrivateKey> {
-    if (!pem.includes('-----BEGIN ENCRYPTED PRIVATE KEY-----')) {
-      const decoded = base64.decode(`${pem}`)
-      const salt = decoded.subarray(0, 16)
-      const iv = decoded.subarray(16, 16 + 12)
-      const cypherText = decoded.subarray(16 + 12)
-      const plainText = await cipher.decrypt(salt, iv, cypherText, options)
-      const pb = PrivateKeyMessage.decode(plainText)
-
-      if (pb.Type !== 0) {
-        throw new Error('Incorrect type in protobuf message')
-      }
-
-      if (pb.Data == null) {
-        throw new Error('Data field was missing from protobuf message')
-      }
-
-      const pkcs1Decoded = decodeDer(pb.Data)
-      const privateKeyJwk = pkcs1MessageToJwk(pkcs1Decoded)
-      const publicKeyJwk = privateJWKToPublicJWK(privateKeyJwk)
-      const digest = await publicKeyId(publicKeyJwk)
-
-      options?.signal?.throwIfAborted()
-
-      return new RSAPrivateKey(privateKeyJwk, new RSAPublicKey(publicKeyJwk, digest))
-    }
-
-    pem = pem.replaceAll('-----BEGIN ENCRYPTED PRIVATE KEY-----', '')
-    pem = pem.replaceAll('-----END ENCRYPTED PRIVATE KEY-----', '')
-    pem = pem.replaceAll('\r', '')
-    pem = pem.replaceAll('\n', '')
-
-    const decoded = base64.decode(`m${pem}`)
-    const der = decodeDer(decoded)
-
-    // this looks fragile but DER is a canonical format so we are safe to have
-    // deep property chains like this
-    const salt = der[0][1][0][1][0]
-    const iterations = toNumber(der[0][1][0][1][1])
-    const keyLength = toNumber(der[0][1][0][1][2])
-    const iv = der[0][1][0][1][4][1]
-    const keyData = der[0][1][0][1][4][2]
-
-    const plainText = await cipher.decrypt(salt, iv, keyData, {
-      iterations,
-      keyLength: keyLength * 8,
-      hash: 'SHA-512',
-      algorithm: 'AES-CBC',
-      signal: options?.signal
-    })
-
-    const keyWrapper = decodeDer(plainText)
-    const pkcs1 = keyWrapper[2]
-
-    const pkcs1Decoded = decodeDer(pkcs1)
-    const privateKeyJwk = pkcs1MessageToJwk(pkcs1Decoded)
-
-    const publicKeyJwk = privateJWKToPublicJWK(privateKeyJwk)
-    const digest = await publicKeyId(publicKeyJwk)
-
-    options?.signal?.throwIfAborted()
-
-    return new RSAPrivateKey(privateKeyJwk, new RSAPublicKey(publicKeyJwk, digest))
-  }
-   */
 }
 
 export function rsaCrypto (): CryptoImplementation {
   return new RSACrypto()
 }
-/*
-function toNumber (buf: Uint8Array): number {
-  if (buf.length === 0) {
-    return 0
-  }
 
-  const str = [...buf]
-    .map(n => n.toString(16).padStart(2, '0'))
-    .join('')
-
-  return parseInt(str, 16)
-}
-*/
 /**
  * Convert private key PKCS#1 in ASN1 DER format to JWK
  */
@@ -374,7 +279,7 @@ function privateJWKToPublicJWK (jwk: JsonWebKey): JsonWebKey {
   }
 }
 
-export function rsaKeySize (jwk: JsonWebKey): number {
+function rsaKeySize (jwk: JsonWebKey): number {
   if (jwk.kty !== 'RSA') {
     throw new InvalidParametersError('Invalid key type')
   } else if (jwk.n == null) {

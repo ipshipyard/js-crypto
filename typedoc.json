@@ -1,6 +1,8 @@
 {
   "readme": "none",
   "entryPoints": [
-    "./src/index.ts"
+    "./src/index.ts",
+    "./src/der.ts",
+    "./src/pb.ts"
   ]
 }
