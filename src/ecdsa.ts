@@ -1,9 +1,8 @@
 import { CID } from 'multiformats'
 import { base58btc } from 'multiformats/bases/base58'
+import { base64url } from 'multiformats/bases/base64'
 import { identity } from 'multiformats/hashes/identity'
 import { Uint8ArrayList } from 'uint8arraylist'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { decodeDer, encodeBitString, encodeInteger, encodeOctetString, encodeSequence } from './der.ts'
 import { InvalidParametersError } from './errors.ts'
@@ -211,15 +210,15 @@ function privateJWKToPublicJWK (jwk: JsonWebKey): JsonWebKey {
 function pkiMessageToPrivateJWK (buf: Uint8Array): JsonWebKey {
   const message = decodeDer(buf)
   const privateKey = message[1]
-  const d = uint8ArrayToString(privateKey, 'base64url')
+  const d = base64url.baseEncode(privateKey)
   const coordinates: Uint8Array = message[2][1][0]
   const offset = 1
   let x: string
   let y: string
 
   if (privateKey.byteLength === P_256_KEY_LENGTH) {
-    x = uint8ArrayToString(coordinates.subarray(offset, offset + P_256_KEY_LENGTH), 'base64url')
-    y = uint8ArrayToString(coordinates.subarray(offset + P_256_KEY_LENGTH), 'base64url')
+    x = base64url.baseEncode(coordinates.subarray(offset, offset + P_256_KEY_LENGTH))
+    y = base64url.baseEncode(coordinates.subarray(offset + P_256_KEY_LENGTH))
 
     return {
       ...P_256_KEY_JWK,
@@ -231,8 +230,8 @@ function pkiMessageToPrivateJWK (buf: Uint8Array): JsonWebKey {
   }
 
   if (privateKey.byteLength === P_384_KEY_LENGTH) {
-    x = uint8ArrayToString(coordinates.subarray(offset, offset + P_384_KEY_LENGTH), 'base64url')
-    y = uint8ArrayToString(coordinates.subarray(offset + P_384_KEY_LENGTH), 'base64url')
+    x = base64url.baseEncode(coordinates.subarray(offset, offset + P_384_KEY_LENGTH))
+    y = base64url.baseEncode(coordinates.subarray(offset + P_384_KEY_LENGTH))
 
     return {
       ...P_384_KEY_JWK,
@@ -244,8 +243,8 @@ function pkiMessageToPrivateJWK (buf: Uint8Array): JsonWebKey {
   }
 
   if (privateKey.byteLength === P_521_KEY_LENGTH) {
-    x = uint8ArrayToString(coordinates.subarray(offset, offset + P_521_KEY_LENGTH), 'base64url')
-    y = uint8ArrayToString(coordinates.subarray(offset + P_521_KEY_LENGTH), 'base64url')
+    x = base64url.baseEncode(coordinates.subarray(offset, offset + P_521_KEY_LENGTH))
+    y = base64url.baseEncode(coordinates.subarray(offset + P_521_KEY_LENGTH))
 
     return {
       ...P_521_KEY_JWK,
@@ -268,8 +267,8 @@ function pkiToPublicJWK (buf: Uint8Array): JsonWebKey {
   let y: string
 
   if (coordinates.byteLength === ((P_256_KEY_LENGTH * 2) + 1)) {
-    x = uint8ArrayToString(coordinates.subarray(offset, offset + P_256_KEY_LENGTH), 'base64url')
-    y = uint8ArrayToString(coordinates.subarray(offset + P_256_KEY_LENGTH), 'base64url')
+    x = base64url.baseEncode(coordinates.subarray(offset, offset + P_256_KEY_LENGTH))
+    y = base64url.baseEncode(coordinates.subarray(offset + P_256_KEY_LENGTH))
 
     return {
       ...P_256_KEY_JWK,
@@ -280,8 +279,8 @@ function pkiToPublicJWK (buf: Uint8Array): JsonWebKey {
   }
 
   if (coordinates.byteLength === ((P_384_KEY_LENGTH * 2) + 1)) {
-    x = uint8ArrayToString(coordinates.subarray(offset, offset + P_384_KEY_LENGTH), 'base64url')
-    y = uint8ArrayToString(coordinates.subarray(offset + P_384_KEY_LENGTH), 'base64url')
+    x = base64url.baseEncode(coordinates.subarray(offset, offset + P_384_KEY_LENGTH))
+    y = base64url.baseEncode(coordinates.subarray(offset + P_384_KEY_LENGTH))
 
     return {
       ...P_384_KEY_JWK,
@@ -292,8 +291,8 @@ function pkiToPublicJWK (buf: Uint8Array): JsonWebKey {
   }
 
   if (coordinates.byteLength === ((P_521_KEY_LENGTH * 2) + 1)) {
-    x = uint8ArrayToString(coordinates.subarray(offset, offset + P_521_KEY_LENGTH), 'base64url')
-    y = uint8ArrayToString(coordinates.subarray(offset + P_521_KEY_LENGTH), 'base64url')
+    x = base64url.baseEncode(coordinates.subarray(offset, offset + P_521_KEY_LENGTH))
+    y = base64url.baseEncode(coordinates.subarray(offset + P_521_KEY_LENGTH))
 
     return {
       ...P_521_KEY_JWK,
@@ -316,8 +315,8 @@ function publicKeyToPKIMessage (publicKey: JsonWebKey): Uint8Array {
       encodeBitString(
         new Uint8ArrayList(
           Uint8Array.from([0x04]),
-          uint8ArrayFromString(publicKey.x ?? '', 'base64url'),
-          uint8ArrayFromString(publicKey.y ?? '', 'base64url')
+          base64url.baseDecode(publicKey.x ?? ''),
+          base64url.baseDecode(publicKey.y ?? '')
         )
       )
     ], 0xA1)
@@ -327,7 +326,7 @@ function publicKeyToPKIMessage (publicKey: JsonWebKey): Uint8Array {
 function privateKeyToPKIMessage (privateKey: JsonWebKey): Uint8Array<ArrayBuffer> {
   return encodeSequence([
     encodeInteger(Uint8Array.from([1])), // header
-    encodeOctetString(uint8ArrayFromString(privateKey.d ?? '', 'base64url')), // body
+    encodeOctetString(base64url.baseDecode(privateKey.d ?? '')), // body
     encodeSequence([ // PKIProtection
       getOID(privateKey.crv)
     ], 0xA0),
@@ -335,8 +334,8 @@ function privateKeyToPKIMessage (privateKey: JsonWebKey): Uint8Array<ArrayBuffer
       encodeBitString(
         new Uint8ArrayList(
           Uint8Array.from([0x04]),
-          uint8ArrayFromString(privateKey.x ?? '', 'base64url'),
-          uint8ArrayFromString(privateKey.y ?? '', 'base64url')
+          base64url.baseDecode(privateKey.x ?? ''),
+          base64url.baseDecode(privateKey.y ?? '')
         )
       )
     ], 0xA1)

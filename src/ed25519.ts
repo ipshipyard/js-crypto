@@ -1,9 +1,8 @@
 import { CID } from 'multiformats'
 import { base58btc } from 'multiformats/bases/base58'
+import { base64url } from 'multiformats/bases/base64'
 import { identity } from 'multiformats/hashes/identity'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { InvalidParametersError } from './errors.ts'
 import { PrivateKeyMessage, PublicKeyMessage } from './pb.ts'
@@ -41,7 +40,7 @@ class Ed25519PublicKey implements PublicKey {
   toProtobuf (): Uint8Array<ArrayBuffer> {
     return PublicKeyMessage.encode({
       Type: this.code,
-      Data: uint8ArrayFromString(this.jwk.x ?? '', 'base64url')
+      Data: base64url.baseDecode(this.jwk.x ?? '')
     })
   }
 
@@ -73,8 +72,8 @@ class Ed25519PrivateKey implements PrivateKey {
     return PrivateKeyMessage.encode({
       Type: this.code,
       Data: uint8ArrayConcat([
-        uint8ArrayFromString(this.jwk.d ?? '', 'base64url'),
-        uint8ArrayFromString(this.jwk.x ?? '', 'base64url')
+        base64url.baseDecode(this.jwk.d ?? ''),
+        base64url.baseDecode(this.jwk.x ?? '')
       ], 64)
     })
   }
@@ -194,6 +193,6 @@ function x5519ToPublicJWK (buf: Uint8Array): JsonWebKey {
     ext: true,
     key_ops: ['verify'],
     kty: 'OKP',
-    x: uint8ArrayToString(buf, 'base64url')
+    x: base64url.baseEncode(buf)
   }
 }

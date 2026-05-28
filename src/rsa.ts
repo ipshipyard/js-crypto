@@ -1,8 +1,7 @@
 import { CID } from 'multiformats'
 import { base36 } from 'multiformats/bases/base36'
+import { base64url } from 'multiformats/bases/base64'
 import { sha256 } from 'multiformats/hashes/sha2'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { decodeDer, encodeBitString, encodeInteger, encodeSequence } from './der.ts'
 import { InvalidParametersError } from './errors.ts'
@@ -195,18 +194,18 @@ function pkcs1MessageToJwk (message: Uint8Array[]): JsonWebKey {
   return {
     alg: 'RS256',
     kty: 'RSA',
-    n: uint8ArrayToString(message[1], 'base64url'),
-    e: uint8ArrayToString(message[2], 'base64url'),
+    n: base64url.baseEncode(message[1]),
+    e: base64url.baseEncode(message[2]),
     ext: true,
     key_ops: [
       'sign'
     ],
-    d: uint8ArrayToString(message[3], 'base64url'),
-    p: uint8ArrayToString(message[4], 'base64url'),
-    q: uint8ArrayToString(message[5], 'base64url'),
-    dp: uint8ArrayToString(message[6], 'base64url'),
-    dq: uint8ArrayToString(message[7], 'base64url'),
-    qi: uint8ArrayToString(message[8], 'base64url')
+    d: base64url.baseEncode(message[3]),
+    p: base64url.baseEncode(message[4]),
+    q: base64url.baseEncode(message[5]),
+    dp: base64url.baseEncode(message[6]),
+    dq: base64url.baseEncode(message[7]),
+    qi: base64url.baseEncode(message[8])
   }
 }
 
@@ -220,14 +219,14 @@ function jwkToPkcs1 (jwk: JsonWebKey): Uint8Array<ArrayBuffer> {
 
   return encodeSequence([
     encodeInteger(Uint8Array.from([0])),
-    encodeInteger(uint8ArrayFromString(jwk.n, 'base64url')),
-    encodeInteger(uint8ArrayFromString(jwk.e, 'base64url')),
-    encodeInteger(uint8ArrayFromString(jwk.d, 'base64url')),
-    encodeInteger(uint8ArrayFromString(jwk.p, 'base64url')),
-    encodeInteger(uint8ArrayFromString(jwk.q, 'base64url')),
-    encodeInteger(uint8ArrayFromString(jwk.dp, 'base64url')),
-    encodeInteger(uint8ArrayFromString(jwk.dq, 'base64url')),
-    encodeInteger(uint8ArrayFromString(jwk.qi, 'base64url'))
+    encodeInteger(base64url.baseDecode(jwk.n)),
+    encodeInteger(base64url.baseDecode(jwk.e)),
+    encodeInteger(base64url.baseDecode(jwk.d)),
+    encodeInteger(base64url.baseDecode(jwk.p)),
+    encodeInteger(base64url.baseDecode(jwk.q)),
+    encodeInteger(base64url.baseDecode(jwk.dp)),
+    encodeInteger(base64url.baseDecode(jwk.dq)),
+    encodeInteger(base64url.baseDecode(jwk.qi))
   ]).subarray()
 }
 
@@ -244,8 +243,8 @@ function jwkToPkix (jwk: JsonWebKey): Uint8Array<ArrayBuffer> {
     RSA_ALGORITHM_IDENTIFIER,
     encodeBitString(
       encodeSequence([
-        encodeInteger(uint8ArrayFromString(jwk.n, 'base64url')),
-        encodeInteger(uint8ArrayFromString(jwk.e, 'base64url'))
+        encodeInteger(base64url.baseDecode(jwk.n)),
+        encodeInteger(base64url.baseDecode(jwk.e))
       ])
     )
   ])
@@ -264,14 +263,8 @@ function pkixMessageToJwk (message: Uint8Array): JsonWebKey {
 
   return {
     kty: 'RSA',
-    n: uint8ArrayToString(
-      keys[0],
-      'base64url'
-    ),
-    e: uint8ArrayToString(
-      keys[1],
-      'base64url'
-    )
+    n: base64url.baseEncode(keys[0]),
+    e: base64url.baseEncode(keys[1])
   }
 }
 
@@ -294,7 +287,7 @@ function rsaKeySize (jwk: JsonWebKey): number {
     throw new InvalidParametersError('Invalid key modulus')
   }
 
-  const modulus = uint8ArrayFromString(jwk.n, 'base64url')
+  const modulus = base64url.baseDecode(jwk.n)
   return modulus.length * 8
 }
 
