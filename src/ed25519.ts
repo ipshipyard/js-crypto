@@ -2,8 +2,8 @@ import { CID } from 'multiformats'
 import { base58btc } from 'multiformats/bases/base58'
 import { identity } from 'multiformats/hashes/identity'
 import { concat as uint8ArrayConcat } from 'uint8arrays/concat'
-import { fromString as uint8arrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8arrayToString } from 'uint8arrays/to-string'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { InvalidParametersError } from './errors.ts'
 import { PrivateKeyMessage, PublicKeyMessage } from './pb.ts'
@@ -41,7 +41,7 @@ class Ed25519PublicKey implements PublicKey {
   toProtobuf (): Uint8Array<ArrayBuffer> {
     return PublicKeyMessage.encode({
       Type: this.code,
-      Data: uint8arrayFromString(this.jwk.x ?? '', 'base64url')
+      Data: uint8ArrayFromString(this.jwk.x ?? '', 'base64url')
     })
   }
 
@@ -73,8 +73,8 @@ class Ed25519PrivateKey implements PrivateKey {
     return PrivateKeyMessage.encode({
       Type: this.code,
       Data: uint8ArrayConcat([
-        uint8arrayFromString(this.jwk.d ?? '', 'base64url'),
-        uint8arrayFromString(this.jwk.x ?? '', 'base64url')
+        uint8ArrayFromString(this.jwk.d ?? '', 'base64url'),
+        uint8ArrayFromString(this.jwk.x ?? '', 'base64url')
       ], 64)
     })
   }
@@ -101,9 +101,9 @@ class Ed25519Crypto implements Crypto {
   code = 1
 
   async generatePrivateKey (options?: AbortOptions & Record<string, any>): Promise<PrivateKey> {
-    const key = await crypto.subtle.generateKey('Ed25519', true, ['sign', 'verify'])
-    const privateKeyJwk = await crypto.subtle.exportKey('jwk', key.privateKey)
-    const publicKeyJwk = privateJWKToPublicJWK(privateKeyJwk)
+    const keyPair = await crypto.subtle.generateKey('Ed25519', true, ['sign', 'verify'])
+    const privateKeyJwk = await crypto.subtle.exportKey('jwk', keyPair.privateKey)
+    const publicKeyJwk = await crypto.subtle.exportKey('jwk', keyPair.publicKey)
 
     options?.signal?.throwIfAborted()
 
@@ -194,6 +194,6 @@ function x5519ToPublicJWK (buf: Uint8Array): JsonWebKey {
     ext: true,
     key_ops: ['verify'],
     kty: 'OKP',
-    x: uint8arrayToString(buf, 'base64url')
+    x: uint8ArrayToString(buf, 'base64url')
   }
 }

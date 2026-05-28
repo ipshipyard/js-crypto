@@ -1,5 +1,6 @@
 import { generateKeyPair, privateKeyFromProtobuf, privateKeyToProtobuf } from '@libp2p/crypto/keys'
 import { expect } from 'aegir/chai'
+import { ecdsaCrypto } from '../src/ecdsa.ts'
 import { ed25519Crypto } from '../src/index.ts'
 import { isPrivateKey, isPublicKey, rsaCrypto } from '../src/index.ts'
 import type { Crypto, PrivateKey } from '../src/index.ts'
@@ -29,6 +30,15 @@ const SUPPORTED_KEYS: CryptoKey[] = [{
   },
   generateLibp2pKey () {
     return generateKeyPair('RSA')
+  }
+}, {
+  type: 'ECDSA',
+  getImplementation: ecdsaCrypto,
+  generateKey: () => {
+    return ecdsaCrypto().generatePrivateKey()
+  },
+  generateLibp2pKey () {
+    return generateKeyPair('ECDSA')
   }
 }]
 

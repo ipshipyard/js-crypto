@@ -22,7 +22,7 @@ repo and examine the changes made.
 
 -->
 
-WebCrypto-based implementations of Ed25519 and RSA cryptography.
+WebCrypto-based implementations of ECDSA, Ed25519, and RSA cryptography.
 
 # Install
 

@@ -1,11 +1,12 @@
 /**
  * @packageDocumentation
  *
- * WebCrypto-based implementations of Ed25519 and RSA cryptography.
+ * WebCrypto-based implementations of ECDSA, Ed25519, and RSA cryptography.
  */
 import type { AbortOptions } from 'abort-error'
 import type { CID, MultihashDigest } from 'multiformats/cid'
 
+export { ecdsaCrypto } from './ecdsa.ts'
 export { ed25519Crypto } from './ed25519.ts'
 export { rsaCrypto } from './rsa.ts'
 
