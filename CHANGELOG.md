@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/ipshipyard/js-crypto/compare/v1.0.2...v1.0.3) (2026-05-28)
+
+### Bug Fixes
+
+* use jwk internally ([5c64bef](https://github.com/ipshipyard/js-crypto/commit/5c64bef047c46e13a1e0d8164d5d8effde4e0273))
+
 ## [1.0.2](https://github.com/ipshipyard/js-crypto/compare/v1.0.1...v1.0.2) (2026-05-28)
 
 ### Bug Fixes
