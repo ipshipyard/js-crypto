@@ -7,7 +7,7 @@ import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-a
 import { decodeDer, encodeBitString, encodeInteger, encodeSequence } from './der.ts'
 import { InvalidParametersError } from './errors.ts'
 import { PrivateKeyMessage, PublicKeyMessage } from './pb.ts'
-import type { CryptoImplementation, PrivateKey, PublicKey } from './index.ts'
+import type { Crypto, PrivateKey, PublicKey } from './index.ts'
 import type { AbortOptions } from 'abort-error'
 import type { MultihashDigest } from 'multiformats'
 
@@ -42,10 +42,7 @@ class RSAPublicKey implements PublicKey {
   }
 
   toProtobuf (): Uint8Array<ArrayBuffer> {
-    return PublicKeyMessage.encode({
-      Type: this.code,
-      Data: jwkToPkix(this.jwk)
-    })
+    return publicKeyToProtobuf(this.code, this.jwk)
   }
 
   async verify (message: Uint8Array, signature: Uint8Array, options?: AbortOptions): Promise<boolean> {
@@ -80,10 +77,7 @@ class RSAPrivateKey implements PrivateKey {
   }
 
   toProtobuf (): Uint8Array<ArrayBuffer> {
-    return PrivateKeyMessage.encode({
-      Type: this.code,
-      Data: jwkToPkcs1(this.jwk)
-    })
+    return privateKeyToProtobuf(this.code, this.jwk)
   }
 
   async sign (message: Uint8Array, options?: AbortOptions): Promise<Uint8Array<ArrayBuffer>> {
@@ -112,7 +106,7 @@ export interface CreateRSAPrivateKeyOptions extends AbortOptions, Record<string,
   bits?: number
 }
 
-class RSACrypto implements CryptoImplementation {
+class RSACrypto implements Crypto {
   public type = 'RSA'
   public code = 0
 
@@ -128,7 +122,7 @@ class RSACrypto implements CryptoImplementation {
 
     const jwkPrivateKey = await crypto.subtle.exportKey('jwk', keypair.privateKey)
     const jwkPublicKey = await crypto.subtle.exportKey('jwk', keypair.publicKey)
-    const digest = await publicKeyId(jwkPublicKey)
+    const digest = await publicKeyId(jwkPrivateKey)
 
     options?.signal?.throwIfAborted()
 
@@ -176,7 +170,7 @@ class RSACrypto implements CryptoImplementation {
   }
 }
 
-export function rsaCrypto (): CryptoImplementation {
+export function rsaCrypto (): Crypto {
   return new RSACrypto()
 }
 
@@ -297,4 +291,18 @@ async function publicKeyId (jwk: JsonWebKey): Promise<MultihashDigest<0x12>> {
   })
 
   return sha256.digest(data)
+}
+
+function publicKeyToProtobuf (code: number, jwk: JsonWebKey): Uint8Array<ArrayBuffer> {
+  return PublicKeyMessage.encode({
+    Type: code,
+    Data: jwkToPkix(jwk)
+  })
+}
+
+function privateKeyToProtobuf (code: number, jwk: JsonWebKey): Uint8Array<ArrayBuffer> {
+  return PrivateKeyMessage.encode({
+    Type: code,
+    Data: jwkToPkcs1(jwk)
+  })
 }

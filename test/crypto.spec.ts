@@ -2,12 +2,12 @@ import { generateKeyPair, privateKeyFromProtobuf, privateKeyToProtobuf } from '@
 import { expect } from 'aegir/chai'
 import { ed25519Crypto } from '../src/index.ts'
 import { isPrivateKey, isPublicKey, rsaCrypto } from '../src/index.ts'
-import type { CryptoImplementation, PrivateKey } from '../src/index.ts'
+import type { Crypto, PrivateKey } from '../src/index.ts'
 import type { PrivateKey as Libp2pPrivateKey } from '@libp2p/interface'
 
 interface CryptoKey {
   type: string
-  getImplementation(): CryptoImplementation
+  getImplementation(): Crypto
   generateKey(): Promise<PrivateKey>
   generateLibp2pKey(): Promise<Libp2pPrivateKey>
 }

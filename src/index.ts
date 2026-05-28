@@ -86,7 +86,7 @@ export function isPrivateKey (obj?: any): obj is PrivateKey {
   return typeof obj.type === 'string' && typeof obj.code === 'number' && typeof obj.sign === 'function' && isPublicKey(obj.publicKey)
 }
 
-export interface CryptoImplementation {
+export interface Crypto {
   /**
    * The type of the crypto implementation, e.g. `Ed15519`
    */

@@ -7,7 +7,7 @@ import { toString as uint8arrayToString } from 'uint8arrays/to-string'
 import { withArrayBuffer as uint8ArrayWithArrayBuffer } from 'uint8arrays/with-array-buffer'
 import { InvalidParametersError, InvalidPrivateKeyError } from './errors.ts'
 import { PrivateKeyMessage, PublicKeyMessage } from './pb.ts'
-import type { CryptoImplementation, PrivateKey, PublicKey } from './index.ts'
+import type { Crypto, PrivateKey, PublicKey } from './index.ts'
 import type { AbortOptions } from 'abort-error'
 import type { MultihashDigest } from 'multiformats'
 
@@ -100,7 +100,7 @@ class Ed25519PrivateKey implements PrivateKey {
   }
 }
 
-class Ed25519Crypto implements CryptoImplementation {
+class Ed25519Crypto implements Crypto {
   type = 'Ed25519'
   code = 1
 
@@ -177,7 +177,7 @@ class Ed25519Crypto implements CryptoImplementation {
 */
 }
 
-export function ed25519Crypto (): CryptoImplementation {
+export function ed25519Crypto (): Crypto {
   return new Ed25519Crypto()
 }
 
