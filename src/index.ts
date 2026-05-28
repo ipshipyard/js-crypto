@@ -37,6 +37,11 @@ export interface PublicKey {
   toProtobuf (): Uint8Array<ArrayBuffer>
 
   /**
+   * Return this key as a RFC 7517 Json Web Key
+   */
+  toJWK (): JsonWebKey
+
+  /**
    * Verify the passed message against it's signature
    */
   verify(message: Uint8Array, signature: Uint8Array, options?: AbortOptions): boolean | Promise<boolean>
@@ -71,6 +76,11 @@ export interface PrivateKey {
    * Return this key encoded as a protobuf PrivateKey message
    */
   toProtobuf (): Uint8Array<ArrayBuffer>
+
+  /**
+   * Return this key as a RFC 7517 Json Web Key
+   */
+  toJWK (): JsonWebKey
 
   /**
    * Sign the passed message and return a signature

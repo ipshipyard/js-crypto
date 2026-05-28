@@ -45,6 +45,10 @@ class RSAPublicKey implements PublicKey {
     return publicKeyToProtobuf(this.code, this.jwk)
   }
 
+  toJWK (): JsonWebKey {
+    return JSON.parse(JSON.stringify(this.jwk))
+  }
+
   async verify (message: Uint8Array, signature: Uint8Array, options?: AbortOptions): Promise<boolean> {
     const key = await crypto.subtle.importKey('jwk', this.jwk, {
       name: 'RSASSA-PKCS1-v1_5',
@@ -80,6 +84,10 @@ class RSAPrivateKey implements PrivateKey {
     return privateKeyToProtobuf(this.code, this.jwk)
   }
 
+  toJWK (): JsonWebKey {
+    return JSON.parse(JSON.stringify(this.jwk))
+  }
+
   async sign (message: Uint8Array, options?: AbortOptions): Promise<Uint8Array<ArrayBuffer>> {
     const key = await crypto.subtle.importKey('jwk', this.jwk, {
       name: 'RSASSA-PKCS1-v1_5',
@@ -111,9 +119,15 @@ class RSACrypto implements Crypto {
   public code = 0
 
   async generatePrivateKey (options?: CreateRSAPrivateKeyOptions): Promise<PrivateKey> {
+    const modulusLength = options?.bits ?? 2048
+
+    if (modulusLength > MAX_RSA_KEY_SIZE) {
+      throw new InvalidParametersError('Key size is too large')
+    }
+
     const keypair = await crypto.subtle.generateKey({
       name: 'RSASSA-PKCS1-v1_5',
-      modulusLength: options?.bits ?? 2048,
+      modulusLength,
       publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
       hash: {
         name: 'SHA-256'
