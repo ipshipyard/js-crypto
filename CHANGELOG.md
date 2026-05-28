@@ -1,3 +1,13 @@
+## [1.1.0](https://github.com/ipshipyard/js-crypto/compare/v1.0.3...v1.1.0) (2026-05-28)
+
+### Features
+
+* add ECDSA crypto ([cc2cee7](https://github.com/ipshipyard/js-crypto/commit/cc2cee7819100689632565ea2e7496faa2bf2e74))
+
+### Bug Fixes
+
+* use base64url encoder directly ([93b5b46](https://github.com/ipshipyard/js-crypto/commit/93b5b4658719a2b30fe14b70e957737a88754a8e))
+
 ## [1.0.3](https://github.com/ipshipyard/js-crypto/compare/v1.0.2...v1.0.3) (2026-05-28)
 
 ### Bug Fixes
