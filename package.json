@@ -178,7 +178,7 @@
   "devDependencies": {
     "@libp2p/crypto": "^5.1.15",
     "@libp2p/interface": "^3.2.2",
-    "@types/sinon": "^21.0.1",
+    "@types/sinon": "^22.0.0",
     "aegir": "^48.0.4",
     "protons": "^9.0.1"
   },
