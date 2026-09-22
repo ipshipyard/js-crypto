@@ -180,7 +180,7 @@
     "@libp2p/interface": "^3.2.2",
     "@types/sinon": "^21.0.1",
     "aegir": "^48.0.4",
-    "protons": "^9.0.1"
+    "protons": "^10.0.5"
   },
   "overrides": {
     "interface-datastore": "^10.0.1"
